@@ -6,8 +6,7 @@ import {Button} from "react-bootstrap";
 import MovieList from "../components/movies/MovieList";
 import CreateMovieModal from "../components/movies/CreateMovieModal";
 import UpdateMovieModal from "../components/movies/UpdateMovieModal";
-// Import statements from App.js related to movies...
-// The entire function component logic related to movies goes here
+
 
 const MoviesPage = () => {
     const [movies, setMovies] = useState([]);
@@ -23,13 +22,11 @@ const MoviesPage = () => {
     const fetchMovies = async () => {
         try {
             const response = await getAllMovies();
-            // Assuming getAllMovies() is an Axios call, you might not need to check response.status here
-            // Directly check if response.data.data exists and is an array
+
             if (Array.isArray(response.data.data)) {
-                setMovies(response.data.data); // Note the additional .data here
+                setMovies(response.data.data);
                 setError('');
             } else {
-                // Log unexpected structure for debugging
                 console.error("Unexpected response structure:", response.data);
                 setError('Failed to fetch movies due to unexpected response structure.');
             }
@@ -67,8 +64,12 @@ const MoviesPage = () => {
         }
     };
 
+    // const handleEdit = (movie) => {
+    //     setCurrentMovie(movie);
+    // };
     const handleEdit = (movie) => {
         setCurrentMovie(movie);
+        setShowUpdateModal(true); // Show the update modal directly when editing
     };
 
 
@@ -79,15 +80,17 @@ const MoviesPage = () => {
         setCurrentMovie(movie);
         setShowUpdateModal(true);
     };
+
     const handleCloseUpdateModal = () => setShowUpdateModal(false);
 
     return (
         <div className="container mt-5">
             {error && <div className="alert alert-danger" role="alert">{error}</div>}
-            <MovieForm onSubmit={handleCreateOrUpdate} initialData={currentMovie} />
+            {/*<MovieForm onSubmit={handleCreateOrUpdate} initialData={currentMovie} />*/}
             <Button variant="primary" onClick={handleShowCreateModal}>
                 Ajouter un film
             </Button>
+
             <hr />
             <MovieList movies={movies} onDelete={handleDelete} onEdit={handleEdit} />
 
@@ -97,14 +100,16 @@ const MoviesPage = () => {
                 fetchMovies={fetchMovies}
             />
 
-            {currentMovie && (
+            {showUpdateModal && (
                 <UpdateMovieModal
                     show={showUpdateModal}
                     handleClose={handleCloseUpdateModal}
                     currentMovie={currentMovie}
+                    onSubmit={handleCreateOrUpdate} // Assuming UpdateMovieModal uses this prop for form submission
                     fetchMovies={fetchMovies}
                 />
             )}
+
         </div>
     );
 };

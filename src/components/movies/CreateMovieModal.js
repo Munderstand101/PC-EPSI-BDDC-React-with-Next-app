@@ -5,71 +5,89 @@ import { createMovie } from '../../services/movieService';
 function CreateMovieModal({ show, handleClose, fetchMovies }) {
     const [formData, setFormData] = useState({
         title: '',
-        director: '',
-        genres: '',
-        cast: '',
         plot: '',
-        year: ''
+        genres: '',
+        runtime: '',
+        cast: '',
+        poster: '',
+        fullplot: '',
+        languages: '',
+        released: '',
+        directors: '',
+        rated: '',
+        awards: JSON.stringify({ wins: 0, nominations: 0, text: '' }),
+        year: '',
+        imdb: JSON.stringify({ rating: 0, votes: 0, id: '' }),
+        countries: '',
+        type: '',
+        tomatoes: JSON.stringify({
+            viewer: { rating: 0, numReviews: 0, meter: 0 },
+            fresh: 0,
+            critic: { rating: 0, numReviews: 0, meter: 0 },
+            rotten: 0,
+            lastUpdated: ''
+        }),
+        num_mflix_comments: '',
     });
 
     const handleChange = (e) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
+        const { name, value } = e.target;
+        setFormData({ ...formData, [name]: value });
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        // Convertir les genres et le cast en tableau si c'est nécessaire pour votre MovieAPI
         const submitData = {
             ...formData,
+            runtime: parseInt(formData.runtime, 10),
+            year: parseInt(formData.year, 10),
             genres: formData.genres.split(',').map(genre => genre.trim()),
             cast: formData.cast.split(',').map(member => member.trim()),
-            year: parseInt(formData.year, 10) // Assurez-vous que l'année est un nombre
+            languages: formData.languages.split(',').map(language => language.trim()),
+            countries: formData.countries.split(',').map(country => country.trim()),
+            directors: formData.directors.split(',').map(director => director.trim()),
+            awards: JSON.parse(formData.awards),
+            imdb: JSON.parse(formData.imdb),
+            tomatoes: JSON.parse(formData.tomatoes),
+            num_mflix_comments: parseInt(formData.num_mflix_comments, 10),
         };
-        await createMovie(submitData);
-        fetchMovies();
-        handleClose();
+
+        // try {
+            await createMovie(submitData);
+            fetchMovies();
+            handleClose();
+        // } catch (error) {
+        //     console.error("Failed to create movie:", error);
+        //     // Optionally, set an error state here to display an error message
+        // }
     };
 
     return (
         <Modal show={show} onHide={handleClose}>
             <Modal.Header closeButton>
-                <Modal.Title>Créer un nouveau film</Modal.Title>
+                <Modal.Title>Create New Movie</Modal.Title>
             </Modal.Header>
             <Modal.Body>
-                <Form onSubmit={handleSubmit}>
-                    <Form.Group className="mb-3">
-                        <Form.Label>Titre</Form.Label>
-                        <Form.Control type="text" name="title" value={formData.title} onChange={handleChange} />
-                    </Form.Group>
-                    <Form.Group className="mb-3">
-                        <Form.Label>Réalisateur</Form.Label>
-                        <Form.Control type="text" name="director" value={formData.director} onChange={handleChange} />
-                    </Form.Group>
-                    <Form.Group className="mb-3">
-                        <Form.Label>Genres (séparés par des virgules)</Form.Label>
-                        <Form.Control type="text" name="genres" value={formData.genres} onChange={handleChange} />
-                    </Form.Group>
-                    <Form.Group className="mb-3">
-                        <Form.Label>Acteurs (séparés par des virgules)</Form.Label>
-                        <Form.Control type="text" name="cast" value={formData.cast} onChange={handleChange} />
-                    </Form.Group>
-                    <Form.Group className="mb-3">
-                        <Form.Label>Intrigue</Form.Label>
-                        <Form.Control as="textarea" rows={3} name="plot" value={formData.plot} onChange={handleChange} />
-                    </Form.Group>
-                    <Form.Group className="mb-3">
-                        <Form.Label>Année</Form.Label>
-                        <Form.Control type="number" name="year" value={formData.year} onChange={handleChange} />
-                    </Form.Group>
+                <Form>
+                    {Object.entries(formData).map(([key, value]) => (
+                        <Form.Group className="mb-3" controlId={`form${key}`} key={key}>
+                            <Form.Label>{key.charAt(0).toUpperCase() + key.slice(1)}</Form.Label>
+                            <Form.Control
+                                as={['fullplot', 'awards', 'imdb', 'tomatoes'].includes(key) ? 'textarea' : 'input'}
+                                rows={['fullplot', 'awards', 'imdb', 'tomatoes'].includes(key) ? 3 : undefined}
+                                name={key}
+                                value={value}
+                                onChange={handleChange}
+                                placeholder={`Enter ${key}`}
+                                type={['released', 'lastupdated'].includes(key) ? 'date' : 'text'}
+                            />
+                        </Form.Group>
+                    ))}
                 </Form>
             </Modal.Body>
             <Modal.Footer>
-                <Button variant="secondary" onClick={handleClose}>
-                    Fermer
-                </Button>
-                <Button variant="primary" type="submit" onClick={handleSubmit}>
-                    Sauvegarder
-                </Button>
+                <Button variant="secondary" onClick={handleClose}>Close</Button>
+                <Button variant="primary" onClick={handleSubmit}>Save</Button>
             </Modal.Footer>
         </Modal>
     );
